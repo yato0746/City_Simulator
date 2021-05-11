@@ -5,11 +5,9 @@ using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using TMPro;
+using UnityEngine.UI;
 
 public class RealWorldWeather : MonoBehaviour {
-
-	// a1365a908f2f9bd2dfeb58d41177db68
-
 	/*
 		In order to use this API, you need to register on the website.
 
@@ -20,8 +18,6 @@ public class RealWorldWeather : MonoBehaviour {
 
 		Api response docs: https://openweathermap.org/current
 	*/
-
-	//public static Dictionary
 
 	private static RealWorldWeather instance;
 	public static RealWorldWeather Instance { get { return instance; } }
@@ -35,35 +31,117 @@ public class RealWorldWeather : MonoBehaviour {
 		else if (instance != null)
         {
 			Destroy(this);
-			Debug.Log("Object is already existed, destroy GameObject");
+			Debug.Log("Instance already exists, destroy GameObject");
         }
     }
 
-    public TextMeshProUGUI text;
+	[SerializeField] string apiKey = "a1365a908f2f9bd2dfeb58d41177db68";
 
-	public string apiKey = "a1365a908f2f9bd2dfeb58d41177db68";
+	[SerializeField] Image weatherImage;
+	[SerializeField] List<Sprite> spriteList = new List<Sprite>();
+	private Dictionary<string, Sprite> weatherSprites;
 
-	public string city;
-	public bool useLatLng = false;
-	public string latitude;
-	public string longitude;
+	[SerializeField] string city;
+	private Dictionary<int, string> cityStrings = new Dictionary<int, string>()
+	{
+        { 1, "London" },
+        { 2, "New York" },
+        { 3, "Los Angeles" },
+        { 4, "Chicago" },
+        { 5, "Houston" },
+        { 6, "Phoenix" },
+        { 7, "San Diego" },
+        { 8, "San Francisco" }
+    };
+
+	[SerializeField] bool useLatLng = false;
+	[SerializeField] string latitude;
+	[SerializeField] string longitude;
 
 	bool isBusy = false;
 	public bool IsBusy { get { return isBusy; } }
 
-  //  private void Start()
-  //  {
-		
-		//GetRealWeather();
-  //  }
+	string currentPlace = "";
+	[SerializeField] TextMeshProUGUI currentPlaceText;
+	[SerializeField] TextMeshProUGUI weatherText;
+	[SerializeField] TextMeshProUGUI weatherPlusText;
 
-    public void GetRealWeather () 
+	[Header("Specific location")]
+	[SerializeField] TMP_InputField latitudeInput;
+	[SerializeField] TMP_InputField longitudeInput;
+
+    private void Start()
+    {
+		weatherSprites = new Dictionary<string, Sprite>()
+		{
+			{ "Thunderstorm", spriteList[0] },
+			{ "Drizzle", spriteList[1] },
+			{ "Rain", spriteList[2] },
+			{ "Snow", spriteList[3] },
+			{ "Clear", spriteList[4] },
+			{ "Clouds", spriteList[5] },
+			//
+			{ "Mist", spriteList[6] },
+			{ "Smoke", spriteList[7] },
+			{ "Haze", spriteList[8] },
+			{ "Dust", spriteList[9] },
+			{ "Fog", spriteList[10] },
+			{ "Sand", spriteList[11] },
+			{ "Ash", spriteList[12] },
+			{ "Squall", spriteList[13] },
+			{ "Tornado", spriteList[14] },
+		};
+    }
+
+	void SetWeatherImage(string _keyString)
+    {
+		if (weatherSprites.ContainsKey(_keyString))
+        {
+			weatherImage.sprite = weatherSprites[_keyString];
+        }
+		else
+        {
+			weatherImage.sprite = weatherSprites["Clouds"];
+        }
+    }
+
+    public void Button_MyPlace()
+    {
+		latitude = "" + GPS.Instance.Latitude;
+		longitude = "" + GPS.Instance.Longitude;
+		city = "Your Town";
+		useLatLng = true;
+
+		GetRealWeather();
+    }
+
+	public void Button_RandomPlace()
+    {
+		int random = UnityEngine.Random.Range(1, cityStrings.Count + 1);
+		city = cityStrings[random];
+		useLatLng = false;
+
+		GetRealWeather();
+    }
+
+	public void Button_RequestLocation()
+    {
+		latitude = latitudeInput.text;
+		longitude = longitudeInput.text;
+		city = "Location: " + latitudeInput.text + " " + longitudeInput.text;
+		useLatLng = true;
+
+		GetRealWeather();
+    }
+
+	public void GetRealWeather () 
 	{
-		if (isBusy)
+		if (IsBusy)
         {
 			return;
         }
 
+		currentPlace = city;
 		isBusy = true;
 
 		string uri = "api.openweathermap.org/data/2.5/weather?";
@@ -103,8 +181,13 @@ public class RealWorldWeather : MonoBehaviour {
 
 		//Debug.Log ("Temp in °C: " + weather.Celsius ());
 		//Debug.Log ("Wind speed: " + weather.windSpeed);
-		text.text = "Weather: " + weather.main + " " + weather.Celsius() + " Celsius";
+		//text.text = "Weather: " + weather.main + " " + weather.Celsius() + " Celsius";
 
+		weatherText.text = "Weather: " + weather.main + ", " + weather.Celsius() + " Celsius";
+		weatherPlusText.text = "Wind: " + weather.windSpeed + " km/h, " + weather.pressure + " Pa";
+
+		currentPlaceText.text = currentPlace;
+		SetWeatherImage(weather.main);
 		isBusy = false;
 
 		return weather;
