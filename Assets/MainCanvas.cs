@@ -5,13 +5,12 @@ using UnityEngine.UI;
 
 public class MainCanvas : MonoBehaviour
 {
-    [SerializeField] Image weatherImage;
-    [SerializeField] Sprite sprite;
+    [SerializeField] GameObject dropDownObjects;
+    bool isDropDown = true;
 
-
-
-    private void Start()
+    public void Button_DropDown()
     {
-
+        dropDownObjects.SetActive(!isDropDown);
+        isDropDown = !isDropDown;
     }
 }

@@ -22,19 +22,6 @@ public class RealWorldWeather : MonoBehaviour {
 	private static RealWorldWeather instance;
 	public static RealWorldWeather Instance { get { return instance; } }
 
-    private void Awake()
-    {
-        if (instance == null)
-        {
-			instance = this;
-        }
-		else if (instance != null)
-        {
-			Destroy(this);
-			Debug.Log("Instance already exists, destroy GameObject");
-        }
-    }
-
 	[SerializeField] string apiKey = "a1365a908f2f9bd2dfeb58d41177db68";
 
 	[SerializeField] Image weatherImage;
@@ -70,8 +57,18 @@ public class RealWorldWeather : MonoBehaviour {
 	[SerializeField] TMP_InputField latitudeInput;
 	[SerializeField] TMP_InputField longitudeInput;
 
-    private void Start()
-    {
+	private void Awake()
+	{
+		if (instance == null)
+		{
+			instance = this;
+		}
+		else if (instance != null)
+		{
+			Destroy(this);
+			Debug.Log("Instance already exists, destroy GameObject");
+		}
+
 		weatherSprites = new Dictionary<string, Sprite>()
 		{
 			{ "Thunderstorm", spriteList[0] },
@@ -91,7 +88,9 @@ public class RealWorldWeather : MonoBehaviour {
 			{ "Squall", spriteList[13] },
 			{ "Tornado", spriteList[14] },
 		};
-    }
+
+		Button_RandomPlace();
+	}
 
 	void SetWeatherImage(string _keyString)
     {
