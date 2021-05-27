@@ -94,13 +94,20 @@ public class RealWorldWeather : MonoBehaviour {
 
 	void SetWeatherImage(string _keyString)
     {
-		if (weatherSprites.ContainsKey(_keyString))
+		try
+		{
+			if (weatherSprites.ContainsKey(_keyString))
+			{
+				weatherImage.sprite = weatherSprites[_keyString];
+			}
+			else
+			{
+				weatherImage.sprite = weatherSprites["Clouds"];
+			}
+		}
+		catch (Exception _ex)
         {
-			weatherImage.sprite = weatherSprites[_keyString];
-        }
-		else
-        {
-			weatherImage.sprite = weatherSprites["Clouds"];
+			Debug.Log("Error set weather imager: " + _ex);
         }
     }
 
