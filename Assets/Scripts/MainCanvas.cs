@@ -5,12 +5,22 @@ using UnityEngine.UI;
 
 public class MainCanvas : MonoBehaviour
 {
-    [SerializeField] GameObject dropDownObjects;
-    bool isDropDown = true;
+    [SerializeField] GameObject dropdownObjects;
+    [SerializeField] GameObject dropdownWeathers;
 
     public void Button_DropDown()
     {
-        dropDownObjects.SetActive(!isDropDown);
-        isDropDown = !isDropDown;
+        dropdownObjects.SetActive(!dropdownObjects.activeSelf);
+    }
+
+    public void Button_WeatherDropdown()
+    {
+        dropdownWeathers.SetActive(!dropdownWeathers.activeSelf);
+    }
+
+    public void Button_SelectWeather(string _weather)
+    {
+        RealWorldWeather.Instance.SetWeather(_weather, true);
+        dropdownWeathers.SetActive(false);
     }
 }

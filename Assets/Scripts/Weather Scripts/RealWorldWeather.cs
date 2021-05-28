@@ -21,34 +21,56 @@ public class RealWorldWeather : MonoBehaviour {
 
 	private static RealWorldWeather instance;
 	public static RealWorldWeather Instance { get { return instance; } }
+	void InitializeSingleton()
+    {
+		if (instance == null)
+		{
+			instance = this;
+		}
+		else if (instance != null)
+		{
+			Destroy(this);
+			Debug.Log("Instance already exists, destroy GameObject");
+		}
+	}
 
+	[Header("Weather API")]
 	[SerializeField] string apiKey = "a1365a908f2f9bd2dfeb58d41177db68";
-
-	[SerializeField] Image weatherImage;
-	[SerializeField] List<Sprite> spriteList = new List<Sprite>();
-	private Dictionary<string, Sprite> weatherSprites;
-
-	[SerializeField] string city;
-	private Dictionary<int, string> cityStrings = new Dictionary<int, string>()
-	{
-        { 1, "London" },
-        { 2, "New York" },
-        { 3, "Los Angeles" },
-        { 4, "Chicago" },
-        { 5, "Houston" },
-        { 6, "Phoenix" },
-        { 7, "San Diego" },
-        { 8, "San Francisco" }
-    };
-
 	[SerializeField] bool useLatLng = false;
 	[SerializeField] string latitude;
 	[SerializeField] string longitude;
-
+	[SerializeField] string city;
+	string currentPlace = "";
 	bool isBusy = false;
 	public bool IsBusy { get { return isBusy; } }
 
-	string currentPlace = "";
+	private Dictionary<int, string> cityStrings = new Dictionary<int, string>()
+	{
+		{ 1, "London" },
+		{ 2, "New York" },
+		{ 3, "Los Angeles" },
+		{ 4, "Chicago" },
+		{ 5, "Houston" },
+		{ 6, "Phoenix" },
+		{ 7, "San Diego" },
+		{ 8, "San Francisco" }
+	};
+
+	[Header("Weather sprites")]
+	[SerializeField] Sprite defaultSprite;
+	[SerializeField] Sprite thunderstormSprite;
+	[SerializeField] Sprite drizzleSprite;
+	[SerializeField] Sprite rainSprite;
+	[SerializeField] Sprite snowSprite;
+	[SerializeField] Sprite clearSprite;
+	[SerializeField] Sprite cloudsSprite;
+	// "Mist", "Smoke", "Haze", "Dust", "Fog", "Sand", "Ash", "Squall", "Tornado"
+
+	delegate void SetWeatherDelegate();
+	Dictionary<string, SetWeatherDelegate> setWeathers;
+
+	[Header("Canvas")]
+	[SerializeField] Button weatherButton;
 	[SerializeField] TextMeshProUGUI currentPlaceText;
 	[SerializeField] TextMeshProUGUI weatherText;
 	[SerializeField] TextMeshProUGUI weatherPlusText;
@@ -59,57 +81,92 @@ public class RealWorldWeather : MonoBehaviour {
 
 	private void Awake()
 	{
-		if (instance == null)
-		{
-			instance = this;
-		}
-		else if (instance != null)
-		{
-			Destroy(this);
-			Debug.Log("Instance already exists, destroy GameObject");
-		}
-
-		weatherSprites = new Dictionary<string, Sprite>()
-		{
-			{ "Thunderstorm", spriteList[0] },
-			{ "Drizzle", spriteList[1] },
-			{ "Rain", spriteList[2] },
-			{ "Snow", spriteList[3] },
-			{ "Clear", spriteList[4] },
-			{ "Clouds", spriteList[5] },
-			//
-			{ "Mist", spriteList[6] },
-			{ "Smoke", spriteList[7] },
-			{ "Haze", spriteList[8] },
-			{ "Dust", spriteList[9] },
-			{ "Fog", spriteList[10] },
-			{ "Sand", spriteList[11] },
-			{ "Ash", spriteList[12] },
-			{ "Squall", spriteList[13] },
-			{ "Tornado", spriteList[14] },
-		};
-
-		Button_RandomPlace();
+		InitializeSingleton();
 	}
 
-	void SetWeatherImage(string _keyString)
+	private void Start()
+	{
+		setWeathers = new Dictionary<string, SetWeatherDelegate>()
+		{
+			{ "Default", SetDefaultWeather },
+			{ "Thunderstorm", SetThunderstorm },
+			{ "Drizzle", SetDrizzle},
+			{ "Rain", SetRain },
+			{ "Snow", SetSnow },
+			{ "Clear", SetClear},
+			{ "Clouds", SetClouds }
+		};
+
+        Button_RandomPlace();
+    }
+
+    #region Set Weathers
+    public void SetWeather(string _mainWeather, bool _changeText = false)
     {
 		try
 		{
-			if (weatherSprites.ContainsKey(_keyString))
+			if (setWeathers.ContainsKey(_mainWeather))
 			{
-				weatherImage.sprite = weatherSprites[_keyString];
+				setWeathers[_mainWeather]();
 			}
 			else
 			{
-				weatherImage.sprite = weatherSprites["Clouds"];
+				setWeathers["Default"]();
 			}
 		}
-		catch (Exception _ex)
+		catch (Exception _e)
         {
-			Debug.Log("Error set weather imager: " + _ex);
+			Debug.Log(_e.StackTrace);
+        }
+
+		if (_changeText)
+        {
+			weatherText.text = _mainWeather;
         }
     }
+
+    void SetDefaultWeather()
+    {
+		weatherButton.image.sprite = defaultSprite;
+		GameController.Instance.SetEnvironmentEffect(false, true, true, false);
+    }
+
+	void SetThunderstorm()
+    {
+		weatherButton.image.sprite = thunderstormSprite;
+		GameController.Instance.SetEnvironmentEffect(true, true, true, false, true);
+	}
+
+	void SetDrizzle()
+    {
+		weatherButton.image.sprite = drizzleSprite;
+		GameController.Instance.SetEnvironmentEffect(true, true, true, false);
+	}
+
+	void SetRain()
+    {
+		weatherButton.image.sprite = rainSprite;
+		GameController.Instance.SetEnvironmentEffect(true, true, true, false, true);
+	}
+
+	void SetSnow()
+    {
+		weatherButton.image.sprite = snowSprite;
+		GameController.Instance.SetEnvironmentEffect(false, true, false, true);
+	}
+
+	void SetClear()
+    {
+		weatherButton.image.sprite = clearSprite;
+		GameController.Instance.SetEnvironmentEffect(false, true, false, false);
+	}
+
+	void SetClouds()
+    {
+		weatherButton.image.sprite = cloudsSprite;
+		GameController.Instance.SetEnvironmentEffect(false, true, false, false, true);
+	}
+    #endregion
 
     public void Button_MyPlace()
     {
@@ -134,7 +191,7 @@ public class RealWorldWeather : MonoBehaviour {
     {
 		latitude = latitudeInput.text;
 		longitude = longitudeInput.text;
-		city = "Location: " + latitudeInput.text + " " + longitudeInput.text;
+		city = "Location: (" + latitudeInput.text + ", " + longitudeInput.text + ")";
 		useLatLng = true;
 
 		GetRealWeather();
@@ -170,10 +227,10 @@ public class RealWorldWeather : MonoBehaviour {
 		}
 	}
 
-	WeatherStatus ParseJson (string json) {
-		WeatherStatus weather = new WeatherStatus ();
+	WeatherStatus ParseJson(string json) {
+		WeatherStatus weather = new WeatherStatus();
 		try {
-			dynamic obj = JObject.Parse (json);
+			dynamic obj = JObject.Parse(json);
 
 			weather.weatherId = obj.weather[0].id;
 			weather.main = obj.weather[0].main;
@@ -182,18 +239,26 @@ public class RealWorldWeather : MonoBehaviour {
 			weather.pressure = obj.main.pressure;
 			weather.windSpeed = obj.wind.speed;
 		} catch (Exception e) {
-			Debug.Log (e.StackTrace);
+			Debug.Log(e.StackTrace);
 		}
 
 		//Debug.Log ("Temp in °C: " + weather.Celsius ());
 		//Debug.Log ("Wind speed: " + weather.windSpeed);
 		//text.text = "Weather: " + weather.main + " " + weather.Celsius() + " Celsius";
 
+		SetWeather(weather.main);
+		Debug.Log("Main weather: " + weather.main);
+
 		weatherText.text = "Weather: " + weather.main + ", " + weather.Celsius() + " Celsius";
 		weatherPlusText.text = "Wind: " + weather.windSpeed + " km/h, " + weather.pressure + " Pa";
-
 		currentPlaceText.text = currentPlace;
-		SetWeatherImage(weather.main);
+
+		if (weather.main == null)
+        {
+			weatherText.text = "UnIdentified";
+			weatherPlusText.text = "";
+		}
+
 		isBusy = false;
 
 		return weather;

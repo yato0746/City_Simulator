@@ -17,8 +17,8 @@ public class PlayerCharacter : Entity
     [Header("Animation")]
     [SerializeField] Animator animator;
 
-    [Header("Run state")]
-    [SerializeField] float runSpeed = 2f;
+    //[Header("Run state")]
+    //[SerializeField] float runSpeed = 2f;
     
     // STATE MACHINE BEHAVIOUR
     public override void HandleStateBehaviour(int _stateBehaviourId)
