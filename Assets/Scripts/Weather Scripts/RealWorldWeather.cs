@@ -199,6 +199,17 @@ public class RealWorldWeather : MonoBehaviour {
 
 	public void GetRealWeather () 
 	{
+		//if (webRequest.result == UnityWebRequest.Result.ConnectionError)
+		//      {
+		//	return;
+		//      }
+
+		if (Application.internetReachability == NetworkReachability.NotReachable)
+		{
+			Debug.Log("Error. Check internet connection!");
+			return;
+		}
+
 		if (IsBusy)
         {
 			return;
