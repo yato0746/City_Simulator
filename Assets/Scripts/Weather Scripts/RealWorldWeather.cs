@@ -36,7 +36,7 @@ public class RealWorldWeather : MonoBehaviour {
 
 	[Header("Weather API")]
 	[SerializeField] string apiKey = "a1365a908f2f9bd2dfeb58d41177db68";
-	[SerializeField] bool useLatLng = false;
+	[SerializeField] bool useLatLng = false;	
 	[SerializeField] string latitude;
 	[SerializeField] string longitude;
 	[SerializeField] string city;
