@@ -7,9 +7,9 @@ public class PlayerCharacter : Entity
 {
     [Header("Movement")]
     [SerializeField] NavMeshAgent agent;
-
     Transform currentDestination;
-    [SerializeField] List<Transform> destinations;  
+    [SerializeField] List<Transform> destinations;
+    [SerializeField] List<GameObject> graphicObjects;
 
     [Header("GameEffect")]
     [SerializeField] AudioSource audioSource;
@@ -17,89 +17,90 @@ public class PlayerCharacter : Entity
     [Header("Animation")]
     [SerializeField] Animator animator;
 
-    //[Header("Run state")]
-    //[SerializeField] float runSpeed = 2f;
-    
-    // STATE MACHINE BEHAVIOUR
-    public override void HandleStateBehaviour(int _stateBehaviourId)
+    private void Update()
     {
-        if (onStateBehaviours.ContainsKey(_stateBehaviourId))
-        {
-            onStateBehaviours[_stateBehaviourId](this);
-        }
+        animator.SetBool("IsRaining", GameController.Instance.IsRaining);
     }
 
-    // Enter = EntityState * 10
-    // Update = EntityState * 10 + 1
-    // Exit = EntityState * 10 + 2
-    private delegate void OnStateBehaviour(PlayerCharacter _character);
-    private static Dictionary<int, OnStateBehaviour> onStateBehaviours =
-        new Dictionary<int, OnStateBehaviour>()
-        {
-            { (int) EntityState.Idle * 10, IdleEnter },
-            { (int) EntityState.Idle * 10 + 1, IdleUpdate },
-            { (int) EntityState.Walk * 10, WalkEnter },
-            { (int) EntityState.Walk * 10 + 1, WalkUpdate },
-        };
-
-    #region Idle state
+    #region IDLE
     [Header("Idle state")]
     [SerializeField] float idleTime = 3f;
     [SerializeField] float idleTimeRange = 1f;
     float idleCountdown;
 
-    private static void IdleEnter(PlayerCharacter _playerCharacter)
-    {
-        _playerCharacter.IdleEnter();
-    }
-
-    private static void IdleUpdate(PlayerCharacter _playerCharacter)
-    {
-        _playerCharacter.IdleUpdate();
-    }
-
-    private void IdleEnter()
+    protected override void IdleEnter()
     {
         idleCountdown = idleTime + Random.Range(-idleTimeRange, idleTimeRange);
+
+        foreach (GameObject _object in graphicObjects)
+        {
+            _object.SetActive(false);
+        }
+
+        //Debug.Log("Idle Enter at " + Time.frameCount);
     }
 
-    private void IdleUpdate()
+    protected override void IdleUpdate()
     {
         idleCountdown -= Time.deltaTime;
         if (idleCountdown <= 0f)
         {
-            animator.SetTrigger("Walk");
+            animator.SetBool("IsHome", false);
+            //Debug.Log("Idle Update GetOut at " + Time.frameCount);
+        }
+    }
+
+    protected override void IdleExit()
+    {
+        foreach (GameObject _object in graphicObjects)
+        {
+            _object.SetActive(true);
         }
     }
     #endregion
 
-    #region Walk state
+    #region WALK
     [Header("Walk state")]
     [SerializeField] float walkSpeed = 1f;
-    float walkCountdown;
-    private static void WalkEnter(PlayerCharacter _playerCharacter)
-    {
-        _playerCharacter.WalkEnter();
-    }
 
-    private static void WalkUpdate(PlayerCharacter _playerCharacter)
-    {
-        _playerCharacter.WalkUpdate();
-    }
-
-    private void WalkEnter()
+    protected override void WalkEnter()
     {
         int random = Random.Range(0, destinations.Count);
         currentDestination = destinations[random];
         agent.speed = walkSpeed;
         agent.SetDestination(currentDestination.position);
-    }   
 
-    private void WalkUpdate()
+        //Debug.Log("Walk Enter at " + Time.frameCount);
+    }
+
+    protected override void WalkUpdate()
     {
-        if (!agent.hasPath)
+        float _distance = (currentDestination.position - transform.position).magnitude;
+
+        if (_distance < 0.15f)
         {
-            animator.SetTrigger("Idle");
+            animator.SetBool("IsHome", true);
+            //Debug.Log("Walk Update GetOut at " + Time.frameCount);
+        }
+    }
+    #endregion
+
+    #region RUN
+    [Header("Run state")]
+    [SerializeField] float runSpeed = 2f;
+
+    protected override void RunEnter()
+    {
+        agent.speed = runSpeed;
+    }
+
+    protected override void RunUpdate()
+    {
+        float _distance = (currentDestination.position - transform.position).magnitude;
+
+        if (_distance < 0.15f)
+        {
+            animator.SetBool("IsHome", true);
         }
     }
     #endregion

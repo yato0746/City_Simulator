@@ -26,9 +26,14 @@ public class GameController : MonoBehaviour
     [SerializeField] GameObject snowEffect;
 	[SerializeField] Light mlight;
 	
-	const float darkIntensity = 0.75f;
+	const float darkIntensity = 0.53f;
 	const float shiningIntensity = 1.06f;
 	float desiredLightIntensity = 1.06f;
+
+	public bool IsRaining
+    {
+		get { return rainEffect.activeSelf; }
+    }
 
     private void Awake()
     {
