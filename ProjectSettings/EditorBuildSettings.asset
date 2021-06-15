@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Music Simulator.unity
-    guid: 8c81101ef309d564f859ad5938021371
+    path: Assets/Scenes/Scene01.unity
+    guid: 454cc7587fb20284c8301bc22be89a38
+  - enabled: 1
+    path: Assets/Scenes/Scene02.unity
+    guid: 52c57e535055d8a4bbbb0811d319561c
+  - enabled: 1
+    path: Assets/Scenes/Scene03.unity
+    guid: 86433fdf0d6923546bfed7468f1e65f7
   m_configObjects: {}
