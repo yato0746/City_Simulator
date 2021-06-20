@@ -10,8 +10,10 @@ public class CameraController : MonoBehaviour
     bool touched = false;
     Vector2 oldPosition;
 
+
     public void Event_PointerDown()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (!touched)
         {
             if (Input.touches[0].phase == TouchPhase.Began)
@@ -26,10 +28,12 @@ public class CameraController : MonoBehaviour
                 }
             }
         }
+#endif
     }
 
     public void Event_Drag()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (touched)
         {
             if (Input.touchCount > 0)
@@ -50,6 +54,7 @@ public class CameraController : MonoBehaviour
                 oldPosition = _touch.position;
             }
         }
+#endif
     }
 
     public void Event_PointerExit()
